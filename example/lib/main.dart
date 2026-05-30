@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_tree/mind_map_tree.dart';
+import 'package:better_tree/better_tree.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,51 +16,51 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MindMapExample(),
+      home: const BetterTreeExample(),
     );
   }
 }
 
-class MindMapExample extends StatefulWidget {
-  const MindMapExample({super.key});
+class BetterTreeExample extends StatefulWidget {
+  const BetterTreeExample({super.key});
 
   @override
-  State<MindMapExample> createState() => _MindMapExampleState();
+  State<BetterTreeExample> createState() => _BetterTreeExampleState();
 }
 
-class _MindMapExampleState extends State<MindMapExample> {
-  late MindMapNode<String> rootNode;
+class _BetterTreeExampleState extends State<BetterTreeExample> {
+  late BetterTreeNode<String> rootNode;
 
   @override
   void initState() {
     super.initState();
     // Build a sample mind map tree
-    rootNode = MindMapNode<String>(
+    rootNode = BetterTreeNode<String>(
       data: 'Root Node',
       isExpanded: true,
       children: [
-        MindMapNode<String>(
+        BetterTreeNode<String>(
           data: 'Child 1',
           isExpanded: true,
           children: [
-            MindMapNode<String>(data: 'Grandchild 1.1'),
-            MindMapNode<String>(data: 'Grandchild 1.2'),
+            BetterTreeNode<String>(data: 'Grandchild 1.1'),
+            BetterTreeNode<String>(data: 'Grandchild 1.2'),
           ],
         ),
-        MindMapNode<String>(
+        BetterTreeNode<String>(
           data: 'Child 2',
           isExpanded: false,
           children: [
-            MindMapNode<String>(data: 'Grandchild 2.1'),
-            MindMapNode<String>(data: 'Grandchild 2.2'),
-            MindMapNode<String>(data: 'Grandchild 2.3'),
+            BetterTreeNode<String>(data: 'Grandchild 2.1'),
+            BetterTreeNode<String>(data: 'Grandchild 2.2'),
+            BetterTreeNode<String>(data: 'Grandchild 2.3'),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildNodeCard(MindMapNode<String> node) {
+  Widget _buildNodeCard(BetterTreeNode<String> node) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -84,7 +84,7 @@ class _MindMapExampleState extends State<MindMapExample> {
         title: const Text('Mind Map Tree'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: MindMapTree<String>(
+      body: BetterTree<String>(
         rootNode: rootNode,
         builder: _buildNodeCard,
         horizontalSpacing: 60.0,

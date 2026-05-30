@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'mind_map_node.dart';
+import 'better_tree_node.dart';
 import 'tree_node_widget.dart';
 
-typedef NodeBuilder<T> = Widget Function(MindMapNode<T> node);
+typedef NodeBuilder<T> = Widget Function(BetterTreeNode<T> node);
 
-class MindMapTree<T> extends StatefulWidget {
-  final MindMapNode<T> rootNode;
+class BetterTree<T> extends StatefulWidget {
+  final BetterTreeNode<T> rootNode;
   final NodeBuilder<T> builder;
   final double horizontalSpacing;
   final double verticalSpacing;
   final Color lineColor;
   final double lineThickness;
 
-  const MindMapTree({
+  const BetterTree({
     super.key,
     required this.rootNode,
     required this.builder,
@@ -23,10 +23,10 @@ class MindMapTree<T> extends StatefulWidget {
   });
 
   @override
-  State<MindMapTree<T>> createState() => _MindMapTreeState<T>();
+  State<BetterTree<T>> createState() => _BetterTreeState<T>();
 }
 
-class _MindMapTreeState<T> extends State<MindMapTree<T>> {
+class _BetterTreeState<T> extends State<BetterTree<T>> {
   @override
   Widget build(BuildContext context) {
     return InteractiveViewer(
@@ -41,7 +41,7 @@ class _MindMapTreeState<T> extends State<MindMapTree<T>> {
     );
   }
 
-  Widget _buildNode(MindMapNode<T> node) {
+  Widget _buildNode(BetterTreeNode<T> node) {
     Widget nodeWidget = widget.builder(node);
 
     // If it has children, optionally add an expand/collapse button

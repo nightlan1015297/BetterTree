@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mind_map_tree/mind_map_tree.dart';
+import 'package:better_tree/better_tree.dart';
 
 void main() {
-  testWidgets('MindMapTree renders root and expands correctly', (WidgetTester tester) async {
-    final root = MindMapNode<String>(
+  testWidgets('BetterTree renders root and expands correctly', (WidgetTester tester) async {
+    final root = BetterTreeNode<String>(
       data: 'Root',
       children: [
-        MindMapNode<String>(data: 'Child 1'),
+        BetterTreeNode<String>(data: 'Child 1'),
       ],
     );
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: MindMapTree<String>(
+          body: BetterTree<String>(
             rootNode: root,
             builder: (node) => Text(node.data),
           ),
