@@ -6,6 +6,7 @@ class TreeNodeWidget extends MultiChildRenderObjectWidget {
   final double verticalSpacing;
   final Color lineColor;
   final double lineThickness;
+  final double animationValue;
 
   const TreeNodeWidget({
     super.key,
@@ -13,6 +14,7 @@ class TreeNodeWidget extends MultiChildRenderObjectWidget {
     required this.verticalSpacing,
     required this.lineColor,
     required this.lineThickness,
+    this.animationValue = 1.0,
     required super.children,
   });
 
@@ -23,6 +25,7 @@ class TreeNodeWidget extends MultiChildRenderObjectWidget {
       verticalSpacing: verticalSpacing,
       lineColor: lineColor,
       lineThickness: lineThickness,
+      animationValue: animationValue,
     );
   }
 
@@ -47,6 +50,10 @@ class TreeNodeWidget extends MultiChildRenderObjectWidget {
     if (renderObject.lineThickness != lineThickness) {
       renderObject.lineThickness = lineThickness;
       needsPaint = true;
+    }
+    if (renderObject.animationValue != animationValue) {
+      renderObject.animationValue = animationValue;
+      needsLayout = true;
     }
 
     if (needsLayout) renderObject.markNeedsLayout();

@@ -7,20 +7,59 @@ class RenderTreeNode extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, TreeNodeParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, TreeNodeParentData> {
-  double horizontalSpacing;
-  double verticalSpacing;
-  Color lineColor;
-  double lineThickness;
+  double _horizontalSpacing;
+  double _verticalSpacing;
+  Color _lineColor;
+  double _lineThickness;
+  double _animationValue;
 
   RenderTreeNode({
-    required this.horizontalSpacing,
-    required this.verticalSpacing,
-    required this.lineColor,
-    required this.lineThickness,
-  });
+    required double horizontalSpacing,
+    required double verticalSpacing,
+    required Color lineColor,
+    required double lineThickness,
+    required double animationValue,
+  })  : _horizontalSpacing = horizontalSpacing,
+        _verticalSpacing = verticalSpacing,
+        _lineColor = lineColor,
+        _lineThickness = lineThickness,
+        _animationValue = animationValue;
 
-  // The connection point on the left side of this entire tree node
-  // relative to its top-left corner.
+  double get horizontalSpacing => _horizontalSpacing;
+  set horizontalSpacing(double value) {
+    if (_horizontalSpacing == value) return;
+    _horizontalSpacing = value;
+    markNeedsLayout();
+  }
+
+  double get verticalSpacing => _verticalSpacing;
+  set verticalSpacing(double value) {
+    if (_verticalSpacing == value) return;
+    _verticalSpacing = value;
+    markNeedsLayout();
+  }
+
+  Color get lineColor => _lineColor;
+  set lineColor(Color value) {
+    if (_lineColor == value) return;
+    _lineColor = value;
+    markNeedsPaint();
+  }
+
+  double get lineThickness => _lineThickness;
+  set lineThickness(double value) {
+    if (_lineThickness == value) return;
+    _lineThickness = value;
+    markNeedsPaint();
+  }
+
+  double get animationValue => _animationValue;
+  set animationValue(double value) {
+    if (_animationValue == value) return;
+    _animationValue = value;
+    markNeedsLayout();
+  }
+
   double get leftConnectionY {
     final parentBox = firstChild;
     if (parentBox == null) return 0;
@@ -66,28 +105,54 @@ class RenderTreeNode extends RenderBox
       childrenTotalHeight += verticalSpacing * (childCount - 1);
     }
 
-    double totalHeight = max(parentBox.size.height, childrenTotalHeight);
-    double totalWidth = parentBox.size.width;
+    // Calculate maximum sizes (fully expanded)
+    double maxTotalHeight = max(parentBox.size.height, childrenTotalHeight);
+    double maxTotalWidth = parentBox.size.width;
     if (childCount > 0) {
-      totalWidth += horizontalSpacing + maxChildWidth;
+      maxTotalWidth += horizontalSpacing + maxChildWidth;
     }
 
-    size = constraints.constrain(Size(totalWidth, totalHeight));
+    // Interpolate overall size based on animation value
+    double animatedHeight = parentBox.size.height + (maxTotalHeight - parentBox.size.height) * animationValue;
+    double animatedWidth = parentBox.size.width + (maxTotalWidth - parentBox.size.width) * animationValue;
 
-    // Position parent
-    double parentY = (totalHeight - parentBox.size.height) / 2;
+    size = constraints.constrain(Size(animatedWidth, animatedHeight));
+
+    // Position parent (always centered vertically within the animated total height)
+    double parentY = (animatedHeight - parentBox.size.height) / 2;
     (parentBox.parentData as TreeNodeParentData).offset = Offset(0, parentY);
 
-    // Position children
-    if (childCount > 0) {
-      double currentY = (totalHeight - childrenTotalHeight) / 2;
-      double childrenX = parentBox.size.width + horizontalSpacing;
+    // Position children if animation is playing or expanded
+    if (childCount > 0 && animationValue > 0.0) {
+      // The fully expanded Y starting point
+      double targetStartY = (maxTotalHeight - childrenTotalHeight) / 2;
+
+      // The fully expanded X starting point
+      double targetX = parentBox.size.width + horizontalSpacing;
+
+      // The starting point when collapsed (center of parent node)
+      double collapsedX = parentBox.size.width;
+      double collapsedY = parentY + parentBox.size.height / 2;
+
+      // Animate children X position
+      double childrenX = collapsedX + (targetX - collapsedX) * animationValue;
 
       child = childAfter(parentBox);
+      double currentTargetY = targetStartY;
+
       while (child != null) {
         final parentData = child.parentData as TreeNodeParentData;
-        parentData.offset = Offset(childrenX, currentY);
-        currentY += child.size.height + verticalSpacing;
+
+        // Calculate the individual target Y for this child (its exact center Y when fully expanded)
+        double childTargetCenterY = currentTargetY + child.size.height / 2;
+
+        // Interpolate the child's center Y between the collapsed Y (parent center) and its expanded target center Y
+        double childCurrentCenterY = collapsedY + (childTargetCenterY - collapsedY) * animationValue;
+
+        // Final animated offset
+        parentData.offset = Offset(childrenX, childCurrentCenterY - child.size.height / 2);
+
+        currentTargetY += child.size.height + verticalSpacing;
         child = childAfter(child);
       }
     }
@@ -95,6 +160,16 @@ class RenderTreeNode extends RenderBox
 
   @override
   void paint(PaintingContext context, Offset offset) {
+    if (animationValue == 0.0) {
+      // Only paint the parent box if fully collapsed
+      RenderBox? parentBox = firstChild;
+      if (parentBox != null) {
+        final parentData = parentBox.parentData as TreeNodeParentData;
+        context.paintChild(parentBox, parentData.offset + offset);
+      }
+      return;
+    }
+
     RenderBox? parentBox = firstChild;
     if (parentBox == null) return;
 
@@ -119,7 +194,6 @@ class RenderTreeNode extends RenderBox
         final childOffset = childParentData.offset + offset;
 
         // Determine the target Y.
-        // If the child is a RenderTreeNode, we connect to its visual parent.
         double targetY;
         if (child is RenderTreeNode) {
           targetY = childOffset.dy + child.leftConnectionY;
